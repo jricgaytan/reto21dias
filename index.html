@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Reto 21 Días">
+<meta name="theme-color" content="#1a0e06">
+<title>Reto 21 Días</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a0e06;
+    --sepia: #8B6914;
+    --parchment: #f0ddb0;
+    --parchment-dark: #dfc89a;
+    --gold: #c8941a;
+    --gold-bright: #e8b420;
+    --ember: #d94f1e;
+    --smoke: #6b5a3e;
+    --cream: #fdf6e3;
+    --shadow: rgba(26,14,6,0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: #0f0804;
+    min-height: 100vh;
+    font-family: 'Crimson Text', Georgia, serif;
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── Pergamino ── */
+  .scroll {
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--parchment);
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(200,148,26,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(139,105,20,0.15) 0%, transparent 55%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    min-height: 100vh;
+    position: relative;
+    box-shadow: 0 0 60px rgba(200,148,26,0.2), inset 0 0 80px rgba(139,105,20,0.1);
+  }
+
+  /* Borde izquierdo y derecho estilo pergamino */
+  .scroll::before, .scroll::after {
+    content: '';
+    position: fixed;
+    top: 0; bottom: 0;
+    width: 6px;
+    background: linear-gradient(to right, rgba(139,105,20,0.4), transparent);
+    z-index: 10;
+  }
+  .scroll::before { left: 0; }
+  .scroll::after { right: 0; background: linear-gradient(to left, rgba(139,105,20,0.4), transparent); }
+
+  /* ── Header ── */
+  .header {
+    padding: 36px 24px 20px;
+    text-align: center;
+    border-bottom: 2px solid var(--sepia);
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -6px; left: 10%; right: 10%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .title-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--sepia);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .title-main {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: 2px;
+    line-height: 1.1;
+    text-shadow: 1px 1px 0 rgba(200,148,26,0.3);
+  }
+
+  .title-sub {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--sepia);
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+
+  /* Progreso general */
+  .progress-bar-wrap {
+    margin: 16px 24px 0;
+    height: 6px;
+    background: rgba(139,105,20,0.2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--sepia), var(--gold-bright));
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  .progress-label {
+    text-align: center;
+    font-size: 11px;
+    color: var(--smoke);
+    margin-top: 6px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+  }
+
+  /* ── Día actual ── */
+  .day-indicator {
+    text-align: center;
+    padding: 14px 24px 0;
+  }
+
+  .day-badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    padding: 5px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* ── Semanas / Días grid ── */
+  .weeks-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 16px 20px 8px;
+    justify-content: center;
+  }
+
+  .day-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--sepia);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--smoke);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(253,246,227,0.6);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .day-dot.active {
+    border-color: var(--gold);
+    background: var(--ink);
+    color: var(--gold);
+    box-shadow: 0 0 10px rgba(200,148,26,0.5);
+  }
+
+  .day-dot.completed {
+    background: var(--ink);
+    border-color: var(--gold-bright);
+  }
+
+  .day-dot.completed::after {
+    content: '🔥';
+    font-size: 14px;
+    position: absolute;
+  }
+
+  .day-dot.partial {
+    background: rgba(200,148,26,0.15);
+    border-color: var(--gold);
+  }
+
+  .day-dot.partial .dot-num {
+    color: var(--sepia);
+  }
+
+  .week-label {
+    width: 100%;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--sepia);
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: -2px;
+  }
+
+  /* ── Separador ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: var(--sepia);
+    font-size: 12px;
+    opacity: 0.5;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--sepia);
+  }
+
+  /* ── Lista de hábitos ── */
+  .habits-section {
+    padding: 4px 16px 100px;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--sepia);
+    text-align: center;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  .habit-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 14px;
+    margin-bottom: 8px;
+    background: rgba(253,246,227,0.55);
+    border: 1px solid rgba(139,105,20,0.25);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .habit-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background 0.2s;
+  }
+
+  .habit-row.done {
+    background: rgba(200,148,26,0.12);
+    border-color: rgba(200,148,26,0.4);
+  }
+
+  .habit-row.done::before {
+    background: var(--gold);
+  }
+
+  .habit-row:active {
+    transform: scale(0.98);
+  }
+
+  .flame-check {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1.5px solid rgba(139,105,20,0.4);
+    background: rgba(253,246,227,0.8);
+    font-size: 20px;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .habit-row.done .flame-check {
+    border-color: var(--gold);
+    background: var(--ink);
+    box-shadow: 0 0 12px rgba(217,79,30,0.4);
+  }
+
+  .flame-icon {
+    opacity: 0.25;
+    transition: opacity 0.2s, transform 0.3s;
+    font-size: 18px;
+  }
+
+  .habit-row.done .flame-icon {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+
+  .habit-text {
+    flex: 1;
+  }
+
+  .habit-name {
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .habit-row.done .habit-name {
+    color: var(--smoke);
+    text-decoration: line-through;
+    text-decoration-color: var(--gold);
+  }
+
+  .habit-sub {
+    font-family: 'Crimson Text', serif;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--smoke);
+    margin-top: 1px;
+    opacity: 0.8;
+  }
+
+  /* ── Footer fijo ── */
+  .footer-bar {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    padding: 12px 20px 28px;
+    background: linear-gradient(to top, var(--parchment) 70%, transparent);
+    display: flex;
+    justify-content: center;
+    z-index: 20;
+  }
+
+  .save-btn {
+    background: var(--ink);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 4px 20px rgba(26,14,6,0.5);
+    transition: all 0.2s;
+  }
+
+  .save-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba(26,14,6,0.4);
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: var(--ink);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    padding: 12px 24px;
+    border-radius: 2px;
+    z-index: 100;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── Modal día ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,8,4,0.85);
+    z-index: 50;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-overlay.open {
+    display: flex;
+  }
+
+  .modal-sheet {
+    background: var(--parchment);
+    width: 100%;
+    max-width: 480px;
+    border-radius: 12px 12px 0 0;
+    padding: 24px 20px 40px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--sepia);
+    text-align: center;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .modal-habit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(139,105,20,0.15);
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    color: var(--ink);
+  }
+
+  .modal-habit-row .done-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .modal-close {
+    display: block;
+    margin: 20px auto 0;
+    background: var(--ink);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  /* Ornamento decorativo */
+  .ornament {
+    text-align: center;
+    color: var(--sepia);
+    font-size: 18px;
+    opacity: 0.4;
+    margin: 8px 0;
+    letter-spacing: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scroll">
+  <!-- Header -->
+  <div class="header">
+    <div class="title-eyebrow">Hombre Despierta</div>
+    <div class="title-main">RETO 21 DÍAS</div>
+    <div class="title-sub">Control de Hábitos</div>
+  </div>
+
+  <!-- Progreso -->
+  <div style="padding: 16px 20px 0">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">Día 1 de 21</div>
+  </div>
+
+  <!-- Días grid -->
+  <div class="weeks-strip" id="daysGrid"></div>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <!-- Hábitos del día -->
+  <div class="habits-section">
+    <div class="section-title" id="dayTitle">Día 1 — Hábitos</div>
+    <div id="habitsList"></div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer-bar">
+  <button class="save-btn" onclick="saveDay()">Guardar día</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Modal historial de un día -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modalSheet">
+    <div class="modal-title" id="modalTitle"></div>
+    <div id="modalBody"></div>
+    <button class="modal-close" onclick="closeModalBtn()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+const HABITS = [
+  { name: "Leer 10-20 minutos", sub: "Libro físico o audiolibro", icon: "📖" },
+  { name: "Meditación 10-15 min", sub: "Silencio, respiración o guiada", icon: "🧘" },
+  { name: "Reducir pantallas", sub: "Menos redes, más presencia", icon: "🪞" },
+  { name: "Movimiento diario", sub: "Ejercicio, caminata o entrenamiento", icon: "⚔️" },
+  { name: "Ducha fría", sub: "Al menos los últimos 30 segundos", icon: "🌊" },
+  { name: "Dormir mínimo 7 h", sub: "Descanso como disciplina", icon: "🌙" },
+  { name: "Sin pornografía", sub: "Control sobre los impulsos", icon: "🛡️" },
+  { name: "Invertir en ti", sub: "10-20 min de aprendizaje o reflexión", icon: "🔑" },
+  { name: "Ordenar tu entorno", sub: "Tu espacio refleja tu mente", icon: "🏛️" },
+];
+
+const TOTAL_DAYS = 21;
+const KEY = 'reto21_v1';
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; }
+}
+
+function saveData(data) {
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+let data = loadData();
+// currentDay: 1-21
+let currentDay = data.currentDay || 1;
+let todayChecks = data.days?.[currentDay] ? [...data.days[currentDay]] : new Array(HABITS.length).fill(false);
+
+function renderDaysGrid() {
+  const grid = document.getElementById('daysGrid');
+  grid.innerHTML = '';
+  const days = data.days || {};
+
+  for (let w = 0; w < 3; w++) {
+    const wLabel = document.createElement('div');
+    wLabel.className = 'week-label';
+    wLabel.textContent = `Semana ${w+1}`;
+    grid.appendChild(wLabel);
+
+    for (let d = 1; d <= 7; d++) {
+      const dayNum = w * 7 + d;
+      if (dayNum > TOTAL_DAYS) break;
+      const dot = document.createElement('div');
+      dot.className = 'day-dot';
+      dot.innerHTML = `<span class="dot-num">${dayNum}</span>`;
+
+      if (days[dayNum]) {
+        const checks = days[dayNum];
+        const done = checks.filter(Boolean).length;
+        if (done === HABITS.length) {
+          dot.classList.add('completed');
+          dot.innerHTML = '';
+        } else if (done > 0) {
+          dot.classList.add('partial');
+        }
+      }
+
+      if (dayNum === currentDay) dot.classList.add('active');
+
+      dot.addEventListener('click', () => showDayHistory(dayNum));
+      grid.appendChild(dot);
+    }
+  }
+}
+
+function renderHabits() {
+  const list = document.getElementById('habitsList');
+  const title = document.getElementById('dayTitle');
+  title.textContent = `Día ${currentDay} — Hábitos`;
+  list.innerHTML = '';
+
+  HABITS.forEach((h, i) => {
+    const row = document.createElement('div');
+    row.className = 'habit-row' + (todayChecks[i] ? ' done' : '');
+    row.innerHTML = `
+      <div class="flame-check">
+        <span class="flame-icon">${h.icon}</span>
+      </div>
+      <div class="habit-text">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-sub">${h.sub}</div>
+      </div>
+    `;
+    row.addEventListener('click', () => toggleHabit(i, row));
+    list.appendChild(row);
+  });
+
+  updateProgress();
+}
+
+function toggleHabit(i, row) {
+  todayChecks[i] = !todayChecks[i];
+  row.classList.toggle('done', todayChecks[i]);
+
+  // Vibración haptica suave
+  if (navigator.vibrate) navigator.vibrate(todayChecks[i] ? [10] : [5]);
+
+  updateProgress();
+  // Auto-save silencioso
+  autoSave();
+}
+
+function autoSave() {
+  if (!data.days) data.days = {};
+  data.days[currentDay] = [...todayChecks];
+  data.currentDay = currentDay;
+  saveData(data);
+}
+
+function updateProgress() {
+  const done = todayChecks.filter(Boolean).length;
+  const daysDone = Object.keys(data.days || {}).length;
+  const totalPct = Math.round((daysDone / TOTAL_DAYS) * 100);
+
+  document.getElementById('progressFill').style.width = totalPct + '%';
+  document.getElementById('progressLabel').textContent =
+    `Día ${currentDay} de ${TOTAL_DAYS} · ${done}/${HABITS.length} hoy`;
+}
+
+function saveDay() {
+  if (!data.days) data.days = {};
+  data.days[currentDay] = [...todayChecks];
+
+  const done = todayChecks.filter(Boolean).length;
+  const allDone = done === HABITS.length;
+
+  // Avanzar al siguiente día si no es el último
+  if (currentDay < TOTAL_DAYS) {
+    data.currentDay = currentDay + 1;
+    currentDay = data.currentDay;
+    todayChecks = data.days?.[currentDay] ? [...data.days[currentDay]] : new Array(HABITS.length).fill(false);
+  }
+
+  saveData(data);
+  renderDaysGrid();
+  renderHabits();
+
+  const msg = allDone
+    ? `🔥 Día perfecto. Sigue ardiendo.`
+    : `✦ Día ${currentDay - 1} guardado — ${done}/${HABITS.length} hábitos`;
+  showToast(msg);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Modal historial día anterior
+function showDayHistory(dayNum) {
+  const days = data.days || {};
+  const checks = days[dayNum];
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+
+  title.textContent = `Día ${dayNum}`;
+
+  if (!checks) {
+    body.innerHTML = `<p style="text-align:center;color:var(--smoke);font-family:'Crimson Text',serif;font-style:italic;padding:20px 0">Sin registro aún</p>`;
+  } else {
+    const done = checks.filter(Boolean).length;
+    body.innerHTML = HABITS.map((h, i) => `
+      <div class="modal-habit-row">
+        <span class="done-icon">${checks[i] ? '🔥' : '○'}</span>
+        <span>${h.name}</span>
+      </div>
+    `).join('') + `<p style="text-align:center;font-family:'Cinzel',serif;font-size:11px;color:var(--sepia);margin-top:14px;letter-spacing:1px">${done}/${HABITS.length} completados</p>`;
+  }
+
+  // Si es el día actual, también permitir editar
+  if (dayNum === currentDay) {
+    currentDay = dayNum;
+    todayChecks = checks ? [...checks] : new Array(HABITS.length).fill(false);
+    renderHabits();
+    return;
+  }
+
+  overlay.classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
+}
+
+function closeModalBtn() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// Init
+renderDaysGrid();
+renderHabits();
+</script>
+</body>
+</html>
